@@ -13,9 +13,10 @@ The information stored:
 The required python packages can be installed via `pip install -r requirements.txt`
 
 ## Setup:
-### Last.fm API Key:
+### Last.fm Setup
  - You need your own last.fm API key which you can request at [last.fm API](https://www.last.fm/api "last.fm API")
  - Once youo got your last.fm API key, add it to the mariafm.py file
+ - Add your username to the mariafm.py file
 
 ### Database:
  - You should setup your own database first. Then you can use the provided sql dump to create the lastfm table to store the information in. 
