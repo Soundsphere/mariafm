@@ -30,7 +30,7 @@ CREATE TABLE `lastfm` (
   `Artist` varchar(150) NOT NULL,
   `Album` varchar(150) DEFAULT NULL,
   `Track` varchar(250) DEFAULT NULL,
-  `Played` datetime NOT NULL,
+  `Scrobbled` datetime NOT NULL,
   `Id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='lastfm scrobble list';

@@ -13,6 +13,18 @@ import time
 import pytz
 import pandas as pd
 
+## your last.fm API key
+apikey = 'your_api_key'
+
+
+## connect to the database
+conn = mariadb.connect(
+    user="username",
+    password="password",
+    host="serverip",
+    database="database")
+cur = conn.cursor() 
+
 
 ## change the date format so that it can be inserted into the database. It also applies a timezone
 ## this is needed as last.fms api gives me the times in UTC, therefore it's off by an hour during winter and 
@@ -33,24 +45,15 @@ def date_form(datevalue):
     return(date_out)
 
 
-## connect to the database
-conn = mariadb.connect(
-    user="username",
-    password="password",
-    host="serverip",
-    database="database")
-cur = conn.cursor() 
-
-
 ## Get the last 200 scrobbled tracks from the database
-cur.execute("SELECT Artist, Album, Track, Played FROM Stuff.lastfm ORDER BY Played DESC LIMIT 200") 
+cur.execute("SELECT Artist, Album, Track, Scrobbled FROM Stuff.lastfm ORDER BY Scrobbled DESC LIMIT 200") 
 mariabase = []
-for Artist,Album,Track,Played in cur: 
-     mariabase.append((Artist, Album, Track, date_form(Played)))
+for Artist,Album,Track,Scrobbled in cur: 
+     mariabase.append((Artist, Album, Track, date_form(Scrobbled)))
 
 
 ## get the last 200 scrobbles from lastfm as well. Skip the first iteration should the nowplaying tag be in the json so that the current played track is not added to the database
-response = requests.get("http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=sndsphr&api_key=lastfmapikey&format=json&extended=0&limit=200")
+response = requests.get("http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=sndsphr&api_key=" + apikey + "&format=json&extended=0&limit=200")
 data = json.loads(response.text)
 lastfm = []
 if "@attr" in data["recenttracks"]["track"][0]:
@@ -69,7 +72,7 @@ if not datadiff:
     print("No new scrobbles to add")
 else: 
     for item in datadiff:
-        cur.execute("INSERT INTO lastfm (UserName,Artist,Album,Track,Played) VALUES (?, ?, ?, ?, ?)", ("sndsphr",item[0], item[1], item[2], item[3]))
+        cur.execute("INSERT INTO lastfm (UserName,Artist,Album,Track,Scrobbled) VALUES (?, ?, ?, ?, ?)", ("sndsphr",item[0], item[1], item[2], item[3]))
     print("new scrobbles addeds to the database")
     conn.commit()
 
