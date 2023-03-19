@@ -4,9 +4,9 @@ Get scrobbles from last.fm and push them into a mariadb database
 ## Overview:
 This python script copies the scrobbles of a user into a mariadb database for further data analysis.
 The information stored:
+ - Track
  - Artist
  - Album
- - Track
  - Scrobbled
 
 ### Requirements
