@@ -27,9 +27,9 @@ DROP TABLE IF EXISTS `lastfm`;
 
 CREATE TABLE `lastfm` (
   `UserName` varchar(20) DEFAULT NULL,
+  `Track` varchar(250) DEFAULT NULL,
   `Artist` varchar(150) NOT NULL,
   `Album` varchar(150) DEFAULT NULL,
-  `Track` varchar(250) DEFAULT NULL,
   `Scrobbled` datetime NOT NULL,
   `Id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`Id`)
