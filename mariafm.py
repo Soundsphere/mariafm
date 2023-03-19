@@ -68,6 +68,7 @@ else:
 ## change to sets and compare the two, gives me the difference missing in the database
 datadiff = set(lastfm) - set(mariabase)
 
+
 ## if the set is blank, skip adding the info. If there's something in the set, iterate over the items and add them to the database
 if not datadiff:
     print('No new scrobbles to add')
