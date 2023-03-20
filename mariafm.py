@@ -11,20 +11,22 @@ import mariadb
 from datetime import datetime
 import time
 import pytz
+import config
 import pandas as pd
 
 
-## your last.fm API key and username
-apikey = 'your_api_key'
-username = 'your username'
+## last.fm API key and username
+apikey = config.lastfm_apikey
+## username is user_name to keep it separate from the database column Username
+user_name = config.user_name
 
 ## connect to the database
 conn = mariadb.connect(
-    user='username',
-    password='password',
-    host='serverip',
-    database='database')
-cur = conn.cursor() 
+    user=config.user,
+    password=config.password,
+    host=config.host,
+    database=config.database)
+cur = conn.cursor()
 
 
 ## change the date format so that it can be inserted into the database. It also applies a timezone
@@ -46,37 +48,45 @@ def date_form(datevalue):
     return(date_out)
 
 
-## Get the last 200 scrobbled tracks from the database
-cur.execute('SELECT Track, Artist, Album, Scrobbled FROM Stuff.lastfm ORDER BY Scrobbled DESC LIMIT 200') 
+## Get the last 300 scrobbled tracks from the database
+cur.execute('SELECT Track, Artist, Album, Scrobbled FROM Stuff.lastfm ORDER BY Scrobbled DESC LIMIT 300') 
 mariabase = []
 for Track,Artist,Album,Scrobbled in cur: 
      mariabase.append((Track, Artist, Album, date_form(Scrobbled)))
 
 
-## get the last 200 scrobbles from lastfm as well. Skip the first iteration should the nowplaying tag be in the json so that the current played track is not added to the database
-response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' + username + '&api_key=' + apikey + '&format=json&extended=0&limit=200')
-data = json.loads(response.text)
-lastfm = []
-if '@attr' in data['recenttracks']['track'][0]:
-    for items in data['recenttracks']['track'][1:]:
-        lastfm.append((items['name'],items['artist']['#text'],items['album']['#text'],date_form_tz(items['date']['#text'])))
-else:
-    for items in data['recenttracks']['track']:
-        lastfm.append((items['name'],items['artist']['#text'],items['album']['#text'],date_form_tz(items['date']['#text'])))
+## get the last 6 pages of scrobbles from last.fm, which is 300 scrobbles. Should be plenty
+page = 1
+lastscrobbles = []
+while page < 7:
+    response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' + user_name + '&api_key=' + apikey + '&page=' + str(page) + '&format=json')
+    data = json.loads(response.text)
+    if '@attr' in data['recenttracks']['track'][0]:
+        for items in data['recenttracks']['track'][1:]:
+            lastscrobbles.append((items['name'],items['artist']['#text'],items['album']['#text'],date_form_tz(items['date']['#text'])))
+    else:
+        for items in data['recenttracks']['track']:
+            lastscrobbles.append((items['name'],items['artist']['#text'],items['album']['#text'],date_form_tz(items['date']['#text'])))
+    page += 1
 
 
 ## change to sets and compare the two, gives me the difference missing in the database
-datadiff = set(lastfm) - set(mariabase)
+datadiff = set(lastscrobbles) - set(mariabase)
 
 
 ## if the set is blank, skip adding the info. If there's something in the set, iterate over the items and add them to the database
+## and give me a nice-ish output of what has been added
 if not datadiff:
     print('No new scrobbles to add')
 else: 
     for item in datadiff:
-        cur.execute('INSERT INTO lastfm (UserName,Track,Artist,Album,Scrobbled) VALUES (?, ?, ?, ?, ?)', (username, item[0], item[1], item[2], item[3]))
-    print('new scrobbles addeds to the database')
+        cur.execute('INSERT INTO lastfm (UserName,Track,Artist,Album,Scrobbled) VALUES (?, ?, ?, ?, ?)', (user_name, item[0], item[1], item[2], item[3]))
     conn.commit()
+    count_added = 1
+    for added in datadiff:
+        print(str(count_added) + '. - ', added[0] + ",", added[1] + ",", added[2] + ",", added[3])
+        count_added += 1
+
 
 ## close connection and be done with it
 conn.close()

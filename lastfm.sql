@@ -26,11 +26,11 @@ SET NAMES utf8mb4;
 DROP TABLE IF EXISTS `lastfm`;
 
 CREATE TABLE `lastfm` (
-  `UserName` varchar(20) DEFAULT NULL,
+  `Username` varchar(20) DEFAULT NULL,
   `Track` varchar(250) DEFAULT NULL,
-  `Artist` varchar(150) NOT NULL,
+  `Artist` varchar(150) DEFAULT NULL,
   `Album` varchar(150) DEFAULT NULL,
-  `Scrobbled` datetime NOT NULL,
+  `Scrobbled` datetime DEFAULT NULL,
   `Id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='lastfm scrobble list';
