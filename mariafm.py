@@ -11,21 +11,22 @@ import mariadb
 from datetime import datetime
 import time
 import pytz
+import config
 import pandas as pd
 
 
-## your last.fm API key and username
-apikey = 'your_api_key'
+## last.fm API key and username
+apikey = config.lastfm_apikey
 ## username is user_name to keep it separate from the database column Username
-user_name = 'your username'
+user_name = config.user_name
 
 ## connect to the database
 conn = mariadb.connect(
-    user='username',
-    password='password',
-    host='serverip',
-    database='database')
-cur = conn.cursor() 
+    user=config.user,
+    password=config.password,
+    host=config.host,
+    database=config.database)
+cur = conn.cursor()
 
 
 ## change the date format so that it can be inserted into the database. It also applies a timezone
@@ -74,13 +75,17 @@ datadiff = set(lastscrobbles) - set(mariabase)
 
 
 ## if the set is blank, skip adding the info. If there's something in the set, iterate over the items and add them to the database
+## and give me a nice-ish output of what has been added
 if not datadiff:
     print('No new scrobbles to add')
 else: 
     for item in datadiff:
         cur.execute('INSERT INTO lastfm (UserName,Track,Artist,Album,Scrobbled) VALUES (?, ?, ?, ?, ?)', (user_name, item[0], item[1], item[2], item[3]))
     conn.commit()
-    print('new scrobbles addeds to the database')
+    count_added = 1
+    for added in datadiff:
+        print(str(count_added) + '. - ', added[0] + ",", added[1] + ",", added[2] + ",", added[3])
+        count_added += 1
 
 
 ## close connection and be done with it
