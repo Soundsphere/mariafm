@@ -5,23 +5,6 @@
 ## in the database will be added. 200 is the upper limit the lastfm api will allow, but it should
 ## be enough since I rarely listen to more than 200 scrobbles a day anyway. 
 
-## check if we can use a while loop to iterate over several pages, circumventing the 200 scrobble limit
-## careful with the now played check, if we keep it wihtin the current if-loop, we will always skip the first line of each page
-## maybe put another check for the first page in a separate loop to avoid missing scrobbles
-## 
-## see below code snipped for the iteration, this is the basic idea. How many pages do we need, though? Could we make this dynamic somehow?
-
-'''
-i = 1
-testfm = []
-while i < 6:
-    response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=sndsphr&api_key=74a64595e8af72194dfd790c36dc83d8&page=' + str(i) + '&format=json')
-    data = json.loads(response.text)
-    testfm.append(data)
-    i += 1
-print(testfm)
-'''
-
 import json
 import requests
 import mariadb
@@ -33,7 +16,8 @@ import pandas as pd
 
 ## your last.fm API key and username
 apikey = 'your_api_key'
-username = 'your username'
+## username is user_name to keep it separate from the database column Username
+user_name = 'your username'
 
 ## connect to the database
 conn = mariadb.connect(
@@ -64,26 +48,29 @@ def date_form(datevalue):
 
 
 ## Get the last 200 scrobbled tracks from the database
-cur.execute('SELECT Track, Artist, Album, Scrobbled FROM Stuff.testfm ORDER BY Scrobbled DESC LIMIT 200') 
+cur.execute('SELECT Track, Artist, Album, Scrobbled FROM Stuff.lastfm ORDER BY Scrobbled DESC LIMIT 300') 
 mariabase = []
 for Track,Artist,Album,Scrobbled in cur: 
      mariabase.append((Track, Artist, Album, date_form(Scrobbled)))
 
 
-## get the last 200 scrobbles from lastfm as well. Skip the first iteration should the nowplaying tag be in the json so that the current played track is not added to the database
-response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' + username + '&api_key=' + apikey + '&format=json&extended=0&limit=200')
-data = json.loads(response.text)
-testfm = []
-if '@attr' in data['recenttracks']['track'][0]:
-    for items in data['recenttracks']['track'][1:]:
-        testfm.append((items['name'],items['artist']['#text'],items['album']['#text'],date_form_tz(items['date']['#text'])))
-else:
-    for items in data['recenttracks']['track']:
-        testfm.append((items['name'],items['artist']['#text'],items['album']['#text'],date_form_tz(items['date']['#text'])))
+## get the last 6 pages of scrobbles from last.fm, which is 300 scrobbles. Should be plenty
+page = 1
+lastscrobbles = []
+while page < 7:
+    response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' + user_name + '&api_key=' + apikey + '&page=' + str(page) + '&format=json')
+    data = json.loads(response.text)
+    if '@attr' in data['recenttracks']['track'][0]:
+        for items in data['recenttracks']['track'][1:]:
+            lastscrobbles.append((items['name'],items['artist']['#text'],items['album']['#text'],date_form_tz(items['date']['#text'])))
+    else:
+        for items in data['recenttracks']['track']:
+            lastscrobbles.append((items['name'],items['artist']['#text'],items['album']['#text'],date_form_tz(items['date']['#text'])))
+    page += 1
 
 
 ## change to sets and compare the two, gives me the difference missing in the database
-datadiff = set(testfm) - set(mariabase)
+datadiff = set(lastscrobbles) - set(mariabase)
 
 
 ## if the set is blank, skip adding the info. If there's something in the set, iterate over the items and add them to the database
@@ -91,9 +78,10 @@ if not datadiff:
     print('No new scrobbles to add')
 else: 
     for item in datadiff:
-        cur.execute('INSERT INTO testfm (UserName,Track,Artist,Album,Scrobbled) VALUES (?, ?, ?, ?, ?)', (username, item[0], item[1], item[2], item[3]))
-    print('new scrobbles addeds to the database')
+        cur.execute('INSERT INTO lastfm (UserName,Track,Artist,Album,Scrobbled) VALUES (?, ?, ?, ?, ?)', (user_name, item[0], item[1], item[2], item[3]))
     conn.commit()
+    print('new scrobbles addeds to the database')
+
 
 ## close connection and be done with it
 conn.close()
