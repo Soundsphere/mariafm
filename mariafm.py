@@ -5,6 +5,23 @@
 ## in the database will be added. 200 is the upper limit the lastfm api will allow, but it should
 ## be enough since I rarely listen to more than 200 scrobbles a day anyway. 
 
+## check if we can use a while loop to iterate over several pages, circumventing the 200 scrobble limit
+## careful with the now played check, if we keep it wihtin the current if-loop, we will always skip the first line of each page
+## maybe put another check for the first page in a separate loop to avoid missing scrobbles
+## 
+## see below code snipped for the iteration, this is the basic idea. How many pages do we need, though? Could we make this dynamic somehow?
+
+'''
+i = 1
+lastfm = []
+while i < 6:
+    response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=sndsphr&api_key=74a64595e8af72194dfd790c36dc83d8&page=' + str(i) + '&format=json')
+    data = json.loads(response.text)
+    lastfm.append(data)
+    i += 1
+print(lastfm)
+'''
+
 import json
 import requests
 import mariadb
