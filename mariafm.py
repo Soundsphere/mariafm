@@ -47,7 +47,7 @@ def date_form(datevalue):
     return(date_out)
 
 
-## Get the last 200 scrobbled tracks from the database
+## Get the last 300 scrobbled tracks from the database
 cur.execute('SELECT Track, Artist, Album, Scrobbled FROM Stuff.lastfm ORDER BY Scrobbled DESC LIMIT 300') 
 mariabase = []
 for Track,Artist,Album,Scrobbled in cur: 
