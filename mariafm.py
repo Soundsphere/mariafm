@@ -13,13 +13,13 @@
 
 '''
 i = 1
-lastfm = []
+testfm = []
 while i < 6:
     response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=sndsphr&api_key=74a64595e8af72194dfd790c36dc83d8&page=' + str(i) + '&format=json')
     data = json.loads(response.text)
-    lastfm.append(data)
+    testfm.append(data)
     i += 1
-print(lastfm)
+print(testfm)
 '''
 
 import json
@@ -64,7 +64,7 @@ def date_form(datevalue):
 
 
 ## Get the last 200 scrobbled tracks from the database
-cur.execute('SELECT Track, Artist, Album, Scrobbled FROM Stuff.lastfm ORDER BY Scrobbled DESC LIMIT 200') 
+cur.execute('SELECT Track, Artist, Album, Scrobbled FROM Stuff.testfm ORDER BY Scrobbled DESC LIMIT 200') 
 mariabase = []
 for Track,Artist,Album,Scrobbled in cur: 
      mariabase.append((Track, Artist, Album, date_form(Scrobbled)))
@@ -73,17 +73,17 @@ for Track,Artist,Album,Scrobbled in cur:
 ## get the last 200 scrobbles from lastfm as well. Skip the first iteration should the nowplaying tag be in the json so that the current played track is not added to the database
 response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' + username + '&api_key=' + apikey + '&format=json&extended=0&limit=200')
 data = json.loads(response.text)
-lastfm = []
+testfm = []
 if '@attr' in data['recenttracks']['track'][0]:
     for items in data['recenttracks']['track'][1:]:
-        lastfm.append((items['name'],items['artist']['#text'],items['album']['#text'],date_form_tz(items['date']['#text'])))
+        testfm.append((items['name'],items['artist']['#text'],items['album']['#text'],date_form_tz(items['date']['#text'])))
 else:
     for items in data['recenttracks']['track']:
-        lastfm.append((items['name'],items['artist']['#text'],items['album']['#text'],date_form_tz(items['date']['#text'])))
+        testfm.append((items['name'],items['artist']['#text'],items['album']['#text'],date_form_tz(items['date']['#text'])))
 
 
 ## change to sets and compare the two, gives me the difference missing in the database
-datadiff = set(lastfm) - set(mariabase)
+datadiff = set(testfm) - set(mariabase)
 
 
 ## if the set is blank, skip adding the info. If there's something in the set, iterate over the items and add them to the database
@@ -91,7 +91,7 @@ if not datadiff:
     print('No new scrobbles to add')
 else: 
     for item in datadiff:
-        cur.execute('INSERT INTO lastfm (UserName,Track,Artist,Album,Scrobbled) VALUES (?, ?, ?, ?, ?)', (username, item[0], item[1], item[2], item[3]))
+        cur.execute('INSERT INTO testfm (UserName,Track,Artist,Album,Scrobbled) VALUES (?, ?, ?, ?, ?)', (username, item[0], item[1], item[2], item[3]))
     print('new scrobbles addeds to the database')
     conn.commit()
 
