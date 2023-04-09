@@ -48,17 +48,17 @@ def date_form(datevalue):
     return(date_out)
 
 
-## Get the last 300 scrobbled tracks from the database
-cur.execute('SELECT Track, Artist, Album, Scrobbled FROM Stuff.lastfm ORDER BY Scrobbled DESC LIMIT 300') 
+## Get the last 200 scrobbled tracks from the database
+cur.execute('SELECT Track, Artist, Album, Scrobbled FROM Stuff.lastfm ORDER BY Scrobbled DESC LIMIT 200') 
 mariabase = []
 for Track,Artist,Album,Scrobbled in cur: 
      mariabase.append((Track, Artist, Album, date_form(Scrobbled)))
 
 
-## get the last 6 pages of scrobbles from last.fm, which is 300 scrobbles. Should be plenty
+## get the last 4 pages of scrobbles from last.fm, which is 200 scrobbles. Should be plenty
 page = 1
 lastscrobbles = []
-while page < 7:
+while page < 5:
     response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' + user_name + '&api_key=' + apikey + '&page=' + str(page) + '&format=json')
     data = json.loads(response.text)
     if '@attr' in data['recenttracks']['track'][0]:
