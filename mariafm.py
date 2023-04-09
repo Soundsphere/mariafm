@@ -58,7 +58,7 @@ for Track,Artist,Album,Scrobbled in cur:
 ## get the last 4 pages of scrobbles from last.fm, which is 200 scrobbles. Should be plenty
 page = 1
 lastscrobbles = []
-while page < 5:
+while page <= 4:
     response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' + user_name + '&api_key=' + apikey + '&page=' + str(page) + '&format=json')
     data = json.loads(response.text)
     if '@attr' in data['recenttracks']['track'][0]:
