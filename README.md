@@ -7,6 +7,7 @@ The information stored:
  - Track
  - Artist
  - Album
+ - Loved
  - Scrobbled
 
 ### Requirements
