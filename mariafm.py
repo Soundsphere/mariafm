@@ -5,6 +5,15 @@
 ## in the database will be added. 200 is the upper limit the lastfm api will allow, but it should
 ## be enough since I rarely listen to more than 200 scrobbles a day anyway. 
 
+## TODO: 
+## Once a track is loved, all tracks in the database should be set to true as well
+## UPDATE Stuff.lastfm SET Loved = 'true' WHERE Track = 'RecentlyLovedTrackname'
+## with this everything is kept in sync. 
+## To see when the track was loved we can include the date from lovedtracks api
+## -> or keep tracks the way they are and only add loved = true going forward?
+
+
+
 import json
 import requests
 import mariadb
