@@ -75,7 +75,7 @@ for added in lovedtracks:
     lovedt.append((added[0] + ",", added[1]))
 
 
-## get the last 6 pages of scrobbles from last.fm, which is 200 scrobbles. Should be plenty
+## get the last 4 pages of scrobbles from last.fm, which is 200 scrobbles. Should be plenty
 page = 1
 lastscrobbles = []
 while page <= 4:
