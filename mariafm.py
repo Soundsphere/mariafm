@@ -48,8 +48,15 @@ def date_form(datevalue):
     return(date_out)
 
 
-## Get the last 200 scrobbled tracks from the database
-cur.execute('SELECT Track, Artist, Album, Scrobbled FROM Stuff.lastfm ORDER BY Scrobbled DESC LIMIT 200') 
+## get the amount of records from the database based on the pages to iterate over set in the config file
+## if the pages in the config are set to 4, then 200 records are compared
+def page_iterate():
+    recent_page = (int(config.pages) * 50)
+    return(int(recent_page))
+
+
+## Get the last n records scrobbled tracks from the database based on the config.pages set
+cur.execute('SELECT Track, Artist, Album, Scrobbled FROM Stuff.lastfm ORDER BY Scrobbled DESC LIMIT ' + str(page_iterate()))
 mariabase = []
 for Track,Artist,Album,Scrobbled in cur: 
      mariabase.append((Track, Artist, Album, date_form(Scrobbled)))
@@ -75,10 +82,10 @@ for added in lovedtracks:
     lovedt.append((added[0] + ",", added[1]))
 
 
-## get the last 4 pages of scrobbles from last.fm, which is 200 scrobbles. Should be plenty
+## get the last n pages of scrobbles from last.fm based on the amount of pages set in the config file
 page = 1
 lastscrobbles = []
-while page <= 4:
+while page <= int(config.pages):
     response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' + user_name + '&api_key=' + apikey + '&page=' + str(page) + '&format=json')
     data = json.loads(response.text)
     if '@attr' in data['recenttracks']['track'][0]:

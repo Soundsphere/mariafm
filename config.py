@@ -11,3 +11,6 @@ user = 'user'
 password = 'your_password'
 host = 'serverip'
 database = 'database'
+
+## set how many pages you want to go through. One page is 50 tracks
+pages = '4'
