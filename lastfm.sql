@@ -30,6 +30,7 @@ CREATE TABLE `lastfm` (
   `Track` varchar(250) DEFAULT NULL,
   `Artist` varchar(150) DEFAULT NULL,
   `Album` varchar(150) DEFAULT NULL,
+  'Loved' varchar(5) DEFAULT NULL,
   `Scrobbled` datetime DEFAULT NULL,
   `Id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`Id`)

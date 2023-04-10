@@ -55,6 +55,26 @@ for Track,Artist,Album,Scrobbled in cur:
      mariabase.append((Track, Artist, Album, date_form(Scrobbled)))
 
 
+## get the loved tracks from last.fm. This call gets us the page number of loved tracks to iterate over
+response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getlovedtracks&user=' + user_name + '&api_key=' + apikey + '&format=json')
+loved = json.loads(response.text)
+
+
+## get the actual loved tracks and store them in a list
+totalp = (loved['lovedtracks']['@attr']['totalPages'])
+lovedtracks = []
+page = 1
+while page <= int(totalp):
+    response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getlovedtracks&user=' + user_name + '&api_key=' + apikey + '&' + str(page) + '&format=json')
+    allthedata = json.loads(response.text)
+    for items in allthedata['lovedtracks']['track']:
+        lovedtracks.append((items['name'],items['artist']['name']))
+    page += 1
+lovedt = []
+for added in lovedtracks:
+    lovedt.append((added[0] + ",", added[1]))
+
+
 ## get the last 6 pages of scrobbles from last.fm, which is 300 scrobbles. Should be plenty
 page = 1
 lastscrobbles = []
@@ -80,7 +100,10 @@ if not datadiff:
     print('No new scrobbles to add')
 else: 
     for item in datadiff:
-        cur.execute('INSERT INTO lastfm (UserName,Track,Artist,Album,Scrobbled) VALUES (?, ?, ?, ?, ?)', (user_name, item[0], item[1], item[2], item[3]))
+        if (item[0] + ",", item[1]) in lovedt:
+            cur.execute('INSERT INTO lastfm (Username,Track,Artist,Album,Loved,Scrobbled) VALUES (?, ?, ?, ?, ?, ?)', (user_name, item[0], item[1], item[2], "true", item[3]))
+        else:
+            cur.execute('INSERT INTO lastfm (Username,Track,Artist,Album,Loved,Scrobbled) VALUES (?, ?, ?, ?, ?, ?)', (user_name, item[0], item[1], item[2], "false", item[3]))
     conn.commit()
     count_added = 1
     for added in datadiff:
