@@ -75,11 +75,8 @@ while page <= int(totalp):
     response = requests.get('http://ws.audioscrobbler.com/2.0/?method=user.getlovedtracks&user=' + user_name + '&api_key=' + apikey + '&' + str(page) + '&format=json')
     allthedata = json.loads(response.text)
     for items in allthedata['lovedtracks']['track']:
-        lovedtracks.append((items['name'],items['artist']['name']))
+        lovedtracks.append((items['name'] + ",", items['artist']['name']))
     page += 1
-lovedt = []
-for added in lovedtracks:
-    lovedt.append((added[0] + ",", added[1]))
 
 
 ## get the last n pages of scrobbles from last.fm based on the amount of pages set in the config file
@@ -107,7 +104,7 @@ if not datadiff:
     print('No new scrobbles to add')
 else: 
     for item in datadiff:
-        if (item[0] + ",", item[1]) in lovedt:
+        if (item[0] + ",", item[1]) in lovedtracks:
             cur.execute('INSERT INTO lastfm (Username,Track,Artist,Album,Loved,Scrobbled) VALUES (?, ?, ?, ?, ?, ?)', (user_name, item[0], item[1], item[2], "true", item[3]))
         else:
             cur.execute('INSERT INTO lastfm (Username,Track,Artist,Album,Loved,Scrobbled) VALUES (?, ?, ?, ?, ?, ?)', (user_name, item[0], item[1], item[2], "false", item[3]))
