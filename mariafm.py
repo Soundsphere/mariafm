@@ -11,6 +11,9 @@
 ## with this everything is kept in sync. 
 ## To see when the track was loved we can include the date from lovedtracks api
 ## -> or keep tracks the way they are and only add loved = true going forward?
+##
+## Create a file to initially fill the database for new users
+## this can be done in the same style as the loved tracks, iterating over the pages given by the API
 
 
 
