@@ -22,6 +22,7 @@ The required python packages can be installed via `pip install -r requirements.t
 ### Database:
  - You should setup your own database first. Then you can use the provided sql dump to create the lastfm table to store the information in. 
  - Once setup, you need to adjust the config.py file to connect to your database, by adding database, username, password and server
+ - run init_db.py to populate your database for the first time. This will copy all your tracks over into your database. Needs to be run only once
 
 ### Pages:
  - In the config file you can set the pages to iterate over in last.fm. One recent tracks page shows 50 tracks, so if you set the pages to 6, you'll get 300 tracks
